@@ -1,12 +1,8 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class DetachObject : GrabObject
 {
     [SerializeField] private float distanceSnap = 0.1f;
-
-    private Vector3 originPos;
-    private Quaternion originRot;
 
     private bool attachedToBody = true;
 
@@ -18,10 +14,6 @@ public class DetachObject : GrabObject
 
         mat = new Material(mat); //Instantiate New Material
         SetupMaterial(mat, transform); //Place New Material on Correct Objects
-
-
-        originPos = transform.localPosition;
-        originRot = transform.localRotation;
     }
 
     private void SetupMaterial(Material material, Transform trans)
@@ -34,32 +26,30 @@ public class DetachObject : GrabObject
                 SetupMaterial(material, trans.GetChild(i));
     }
 
-    public override void OnPointerDown(PointerEventData eventData)
+    public override void GrabsObject()
     {
         //Activate Rigidbody
         rb.isKinematic = false;
         attachedToBody = false;
 
-        base.OnPointerDown(eventData);
+        base.GrabsObject();
     }
 
-    public override void OnPointerUp(PointerEventData eventData)
+    public override void DropObject()
     {
-        base.OnPointerUp(eventData);
+        base.DropObject();
 
         //Reattach if located near anchor point
         if (Vector3.Distance(originPos, transform.localPosition) <= distanceSnap)
-            Reattach();
+            ResetPosition();
     }
 
     //Reattaches ligament to body 
-    public void Reattach()
+    public override void ResetPosition()
     {
         rb.isKinematic = true;
-
-        transform.localPosition = originPos;
-        transform.localRotation = originRot;
         attachedToBody = true;
+        base.ResetPosition();
     }
 
     public override void ActivateHover(bool fromParent = false)

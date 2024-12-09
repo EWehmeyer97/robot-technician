@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(MeshCollider))]
-public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
+[RequireComponent(typeof(MouseInteraction))]
+
+public class GrabObject : MonoBehaviour
 {
     [SerializeField] protected Rigidbody rb;
     [SerializeField] protected DetachObject[] detachable;
@@ -12,6 +14,9 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     
     private Vector3 offset;
     private EventTrigger trigger;
+
+    protected Vector3 originPos;
+    protected Quaternion originRot;
 
     protected bool grabbed = false;
     private bool mouseLeftHover = false; //acounts for mouse no longer hovering over object upon grab being released
@@ -23,18 +28,9 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             rb = gameObject.AddComponent<Rigidbody>();
 
         mat = GetComponent<Renderer>().sharedMaterial;
-    }
 
-    //Enables Hover Glow
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        ActivateHover();
-    }
-
-    //Disables Hover Glow
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        DeactivateHover();
+        originPos = transform.localPosition;
+        originRot = transform.localRotation;
     }
 
     public virtual void ActivateHover(bool fromParent = false)
@@ -63,9 +59,8 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         }
     }
 
-
     //Grabs Object
-    public virtual void OnPointerDown(PointerEventData eventData)
+    public virtual void GrabsObject()
     {
         grabbed = true;
 
@@ -77,21 +72,21 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         trigger = gameObject.AddComponent<EventTrigger>();
         EventTrigger.Entry entry = new EventTrigger.Entry();
         entry.eventID = EventTriggerType.Drag;
-        entry.callback.AddListener((data) => { OnClickDragDelegate((PointerEventData)data); });
+        entry.callback.AddListener((data) => { DragObject((PointerEventData)data); });
         trigger.triggers.Add(entry);
     }
 
     //Drags Object
-    private void OnClickDragDelegate(PointerEventData eventData)
+    private void DragObject(PointerEventData eventData)
     {
         Vector3 mouse = Input.mousePosition;
         mouse -= offset;
         mouse.z = Camera.main.WorldToScreenPoint(rb.position).z;
         rb.position = Camera.main.ScreenToWorldPoint(mouse); //As we are exclusively editing Rigidbody's position, we are okay to edit rb outside of FixedUpdate
+        rb.velocity = Vector3.zero; //removes all current movement from rigidbody
     }
 
-    //Releases Object
-    public virtual void OnPointerUp(PointerEventData eventData)
+    public virtual void DropObject()
     {
         grabbed = false;
 
@@ -99,8 +94,14 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
 
         Destroy(trigger);
 
-        if(mouseLeftHover) //triggers hover deactivate in case mouse left during the drag
+        if (mouseLeftHover) //triggers hover deactivate in case mouse left during the drag
             DeactivateHover();
         mouseLeftHover = false;
+    }
+
+    public virtual void ResetPosition()
+    {
+        transform.localPosition = originPos;
+        transform.localRotation = originRot;
     }
 }
