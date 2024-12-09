@@ -1,44 +1,76 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 
 [RequireComponent(typeof(MeshCollider))]
 public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] private Rigidbody rb;
-    [SerializeField] private Material mat;
+    [SerializeField] protected Rigidbody rb;
+    [SerializeField] protected DetachObject[] detachable;
 
+    protected Material mat;
     private readonly int hover = Shader.PropertyToID("_isHover"); //value found in shader
     
     private Vector3 offset;
     private EventTrigger trigger;
 
-    private bool grabbed = false;
-    public bool Grabbed { get { return grabbed; } }
+    protected bool grabbed = false;
+    private bool mouseLeftHover = false; //acounts for mouse no longer hovering over object upon grab being released
 
-    //Enables and Disables Hover glow
+    //Adds a rigidbody in case one has not been set manually
+    protected virtual void Awake()
+    {
+        if(rb == null)
+            rb = gameObject.AddComponent<Rigidbody>();
+
+        mat = GetComponent<Renderer>().sharedMaterial;
+    }
+
+    //Enables Hover Glow
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if(!grabbed)
-            mat.SetInteger(hover, 1);
+        ActivateHover();
     }
 
+    //Disables Hover Glow
     public void OnPointerExit(PointerEventData eventData)
     {
-        if(!grabbed)
+        DeactivateHover();
+    }
+
+    public virtual void ActivateHover(bool fromParent = false)
+    {
+        if (!grabbed)
+        {
+            mat.SetInteger(hover, 1);
+            foreach(var item in detachable)
+                item.ActivateHover(true);
+        } else
+        {
+            mouseLeftHover = false;
+        }
+    }
+
+    public virtual void DeactivateHover(bool fromParent = false)
+    {
+        if (!grabbed)
+        {
             mat.SetInteger(hover, 0);
+            foreach(var item in detachable)
+                item.DeactivateHover(true);
+        } else
+        {
+            mouseLeftHover = true;
+        }
     }
 
 
-    //Grabs, Drags, and Releases Object
-    public void OnPointerDown(PointerEventData eventData)
+    //Grabs Object
+    public virtual void OnPointerDown(PointerEventData eventData)
     {
         grabbed = true;
 
         rb.useGravity = false; //turns off gravity to prevent additional physics on object
+        rb.velocity = Vector3.zero; //removes all current movement from rigidbody
 
         offset = Input.mousePosition - Camera.main.WorldToScreenPoint(rb.position);
 
@@ -49,6 +81,7 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         trigger.triggers.Add(entry);
     }
 
+    //Drags Object
     private void OnClickDragDelegate(PointerEventData eventData)
     {
         Vector3 mouse = Input.mousePosition;
@@ -57,12 +90,17 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         rb.position = Camera.main.ScreenToWorldPoint(mouse); //As we are exclusively editing Rigidbody's position, we are okay to edit rb outside of FixedUpdate
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    //Releases Object
+    public virtual void OnPointerUp(PointerEventData eventData)
     {
         grabbed = false;
 
         rb.useGravity = true;
 
         Destroy(trigger);
+
+        if(mouseLeftHover) //triggers hover deactivate in case mouse left during the drag
+            DeactivateHover();
+        mouseLeftHover = false;
     }
 }
