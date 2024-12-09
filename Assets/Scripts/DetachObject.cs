@@ -49,6 +49,7 @@ public class DetachObject : GrabObject
     {
         rb.isKinematic = true;
         attachedToBody = true;
+
         base.ResetPosition();
     }
 

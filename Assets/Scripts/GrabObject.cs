@@ -6,20 +6,31 @@ using UnityEngine.EventSystems;
 
 public class GrabObject : MonoBehaviour
 {
+    public string componentName;
+    
     [SerializeField] protected Rigidbody rb;
     [SerializeField] protected DetachObject[] detachable;
 
+    //Material Properties
     protected Material mat;
     private readonly int hover = Shader.PropertyToID("_isHover"); //value found in shader to control hover state
     
+    //For Dragging
     private Vector3 offset;
     private EventTrigger trigger;
 
+    //Starting Location
     protected Vector3 originPos;
     protected Quaternion originRot;
 
+    //Booleans for mouse state
     protected bool grabbed = false;
     private bool mouseLeftHover = false; //acounts for mouse no longer hovering over object upon grab being released
+
+    public delegate void OnGrabDelegate(bool connected);
+    public event OnGrabDelegate grabUpdate;
+
+    public DetachObject[] Detachables { get { return detachable; } }
 
     //Adds a rigidbody in case one has not been set manually
     protected virtual void Awake()
@@ -74,6 +85,8 @@ public class GrabObject : MonoBehaviour
         entry.eventID = EventTriggerType.Drag;
         entry.callback.AddListener((data) => { DragObject((PointerEventData)data); });
         trigger.triggers.Add(entry);
+
+        grabUpdate?.Invoke(false);
     }
 
     //Drags Object
@@ -101,7 +114,8 @@ public class GrabObject : MonoBehaviour
 
     public virtual void ResetPosition()
     {
-        transform.localPosition = originPos;
-        transform.localRotation = originRot;
+        transform.SetLocalPositionAndRotation(originPos, originRot);
+
+        grabUpdate?.Invoke(true);
     }
 }
