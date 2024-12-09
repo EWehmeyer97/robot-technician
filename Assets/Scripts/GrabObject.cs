@@ -40,8 +40,8 @@ public class GrabObject : MonoBehaviour
 
         mat = GetComponent<Renderer>().sharedMaterial;
 
-        originPos = transform.localPosition;
-        originRot = transform.localRotation;
+        originPos = rb.transform.localPosition;
+        originRot = rb.transform.localRotation;
     }
 
     public virtual void ActivateHover(bool fromParent = false)
@@ -112,9 +112,14 @@ public class GrabObject : MonoBehaviour
         mouseLeftHover = false;
     }
 
-    public virtual void ResetPosition()
+    public virtual void ResetPosition(bool fromUI = false)
     {
-        transform.SetLocalPositionAndRotation(originPos, originRot);
+        rb.transform.SetLocalPositionAndRotation(originPos, originRot);
+        foreach (var item in detachable)
+            item.ResetPosition(fromUI);
+
+        if(fromUI)
+            ActivateHover();
 
         grabUpdate?.Invoke(true);
     }

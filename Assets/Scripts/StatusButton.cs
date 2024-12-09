@@ -59,7 +59,7 @@ public class StatusButton : MonoBehaviour
 
     private void Clicked()
     {
-        grab.ResetPosition();
+        grab.ResetPosition(true);
 
         UpdateState(true);
     }
