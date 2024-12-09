@@ -8,7 +8,7 @@ public class GrabObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     [SerializeField] protected DetachObject[] detachable;
 
     protected Material mat;
-    private readonly int hover = Shader.PropertyToID("_isHover"); //value found in shader
+    private readonly int hover = Shader.PropertyToID("_isHover"); //value found in shader to control hover state
     
     private Vector3 offset;
     private EventTrigger trigger;

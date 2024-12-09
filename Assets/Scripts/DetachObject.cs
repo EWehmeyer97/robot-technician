@@ -8,13 +8,13 @@ public class DetachObject : GrabObject
     private Vector3 originPos;
     private Quaternion originRot;
 
-    private bool attached = true;
+    private bool attachedToBody = true;
 
     protected override void Awake()
     {
         base.Awake();
 
-        rb.isKinematic = true;
+        rb.isKinematic = true; //detach objects only react when clicked
 
         mat = new Material(mat); //Instantiate New Material
         SetupMaterial(mat, transform); //Place New Material on Correct Objects
@@ -38,7 +38,7 @@ public class DetachObject : GrabObject
     {
         //Activate Rigidbody
         rb.isKinematic = false;
-        attached = false;
+        attachedToBody = false;
 
         base.OnPointerDown(eventData);
     }
@@ -47,26 +47,30 @@ public class DetachObject : GrabObject
     {
         base.OnPointerUp(eventData);
 
-        //Deactivate Rigidbody if located near anchor point
+        //Reattach if located near anchor point
         if (Vector3.Distance(originPos, transform.localPosition) <= distanceSnap)
-        {
-            rb.isKinematic = true;
+            Reattach();
+    }
 
-            transform.localPosition = originPos;
-            transform.localRotation = originRot;
-            attached = true;
-        }
+    //Reattaches ligament to body 
+    public void Reattach()
+    {
+        rb.isKinematic = true;
+
+        transform.localPosition = originPos;
+        transform.localRotation = originRot;
+        attachedToBody = true;
     }
 
     public override void ActivateHover(bool fromParent = false)
     {
-        if(!fromParent || attached)
+        if(!fromParent || attachedToBody)
             base.ActivateHover(fromParent);
     }
 
     public override void DeactivateHover(bool fromParent = false)
     {
-        if (!fromParent || attached)
+        if (!fromParent || attachedToBody)
             base.DeactivateHover(fromParent);
     }
 }
