@@ -26,13 +26,13 @@ public class DetachObject : GrabObject
                 SetupMaterial(material, trans.GetChild(i));
     }
 
-    public override void GrabsObject()
+    public override void GrabsObject(Transform toFollow)
     {
         //Activate Rigidbody
         rb.isKinematic = false;
         attachedToBody = false;
 
-        base.GrabsObject();
+        base.GrabsObject(toFollow);
     }
 
     public override void DropObject()

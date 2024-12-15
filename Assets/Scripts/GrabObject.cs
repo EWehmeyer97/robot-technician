@@ -1,111 +1,99 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.XR.Interaction.Toolkit;
 
-[RequireComponent(typeof(MeshCollider))]
-[RequireComponent(typeof(MouseInteraction))]
-
-public class GrabObject : MonoBehaviour
+public class GrabObject : HoverObject
 {
     public string componentName;
-    
-    [SerializeField] protected Rigidbody rb;
     [SerializeField] protected DetachObject[] detachable;
-
-    //Material Properties
-    protected Material mat;
-    private readonly int hover = Shader.PropertyToID("_isHover"); //value found in shader to control hover state
     
-    //For Dragging
-    private Vector3 offset;
-    private EventTrigger trigger;
 
     //Starting Location
     protected Vector3 originPos;
     protected Quaternion originRot;
-
-    //Booleans for mouse state
-    protected bool grabbed = false;
-    private bool mouseLeftHover = false; //acounts for mouse no longer hovering over object upon grab being released
 
     public delegate void OnGrabDelegate(bool connected);
     public event OnGrabDelegate grabUpdate;
 
     public DetachObject[] Detachables { get { return detachable; } }
 
-    //Adds a rigidbody in case one has not been set manually
-    protected virtual void Awake()
+    protected override void Awake()
     {
-        if(rb == null)
-            rb = gameObject.AddComponent<Rigidbody>();
-
-        mat = GetComponent<Renderer>().sharedMaterial;
+        base.Awake();
 
         originPos = rb.transform.localPosition;
         originRot = rb.transform.localRotation;
+
+        interactable.selectEntered.AddListener(EnterSelect);
+        interactable.selectExited.AddListener(ExitSelect);
     }
 
-    public virtual void ActivateHover(bool fromParent = false)
+    public override void ActivateHover(bool fromParent = false)
     {
+        base.ActivateHover(fromParent);
         if (!grabbed)
         {
-            mat.SetInteger(hover, 1);
-            foreach(var item in detachable)
+            foreach (var item in detachable)
                 item.ActivateHover(true);
-        } else
-        {
-            mouseLeftHover = false;
         }
     }
 
-    public virtual void DeactivateHover(bool fromParent = false)
+    public override void DeactivateHover(bool fromParent = false)
     {
+        base.DeactivateHover(fromParent);
         if (!grabbed)
         {
-            mat.SetInteger(hover, 0);
-            foreach(var item in detachable)
+            foreach (var item in detachable)
                 item.DeactivateHover(true);
-        } else
-        {
-            mouseLeftHover = true;
         }
     }
+
+    #region"Methods required to interact through an XR Interactable"
+    private void EnterSelect(SelectEnterEventArgs args)
+    {
+        GrabsObject(args.interactorObject.transform);
+    }
+
+    private void ExitSelect(SelectExitEventArgs args)
+    {
+        DropObject();
+    }
+
+    #endregion
 
     //Grabs Object
-    public virtual void GrabsObject()
+    public virtual void GrabsObject(Transform toFollow)
     {
         grabbed = true;
 
         rb.useGravity = false; //turns off gravity to prevent additional physics on object
         rb.velocity = Vector3.zero; //removes all current movement from rigidbody
 
-        offset = Input.mousePosition - Camera.main.WorldToScreenPoint(rb.position);
+        Vector3 offsetPosition = toFollow.position - rb.position;
+        Quaternion startRotation = rb.rotation * Quaternion.Inverse(toFollow.rotation);
 
-        trigger = gameObject.AddComponent<EventTrigger>();
-        EventTrigger.Entry entry = new EventTrigger.Entry();
-        entry.eventID = EventTriggerType.Drag;
-        entry.callback.AddListener((data) => { DragObject((PointerEventData)data); });
-        trigger.triggers.Add(entry);
+        StartCoroutine(DragObject(toFollow, offsetPosition, startRotation));
 
         grabUpdate?.Invoke(false);
     }
 
-    //Drags Object
-    private void DragObject(PointerEventData eventData)
+    private IEnumerator DragObject(Transform toFollow, Vector3 offsetPosition, Quaternion startRotation)
     {
-        Vector3 mouse = Input.mousePosition;
-        mouse -= offset;
-        mouse.z = Camera.main.WorldToScreenPoint(rb.position).z;
-        rb.position = Camera.main.ScreenToWorldPoint(mouse); //As we are exclusively editing Rigidbody's position, we are okay to edit rb outside of FixedUpdate
-        rb.velocity = Vector3.zero; //removes all current movement from rigidbody
+        yield return null;
+
+        rb.position = toFollow.position - offsetPosition;
+        rb.rotation = toFollow.rotation * startRotation;
+
+        if (grabbed)
+            StartCoroutine(DragObject(toFollow, offsetPosition, startRotation));
     }
 
     public virtual void DropObject()
     {
         grabbed = false;
-
         rb.useGravity = true;
-
-        Destroy(trigger);
 
         if (mouseLeftHover) //triggers hover deactivate in case mouse left during the drag
             DeactivateHover();
