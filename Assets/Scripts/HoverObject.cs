@@ -5,12 +5,12 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 [RequireComponent(typeof(MeshCollider))]
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(XRSimpleInteractable))]
+[RequireComponent(typeof(XRBaseInteractable))]
 
 public class HoverObject : MonoBehaviour
 {
-    //Booleans for mouse state
-    protected bool mouseLeftHover = false; //acounts for mouse no longer hovering over object upon grab being released
+    //Booleans for hand state
+    protected bool leftHover = false; //acounts for hand no longer hovering over object upon grab being released
     protected bool grabbed = false;
 
     //Material Properties
@@ -19,7 +19,11 @@ public class HoverObject : MonoBehaviour
 
     //For Dragging
     protected Rigidbody rb;
-    protected XRSimpleInteractable interactable;
+    protected XRBaseInteractable interactable;
+
+    protected bool isHovered = false;
+    protected bool parentIsHovered = false;
+    protected bool attachedToBody = true;
 
     protected virtual void Awake()
     {
@@ -27,9 +31,9 @@ public class HoverObject : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
 
-        interactable = GetComponent<XRSimpleInteractable>();
-        interactable.hoverEntered.AddListener(EnterHover);
-        interactable.hoverExited.AddListener(ExitHover);
+        interactable = GetComponent<XRBaseInteractable>();
+        interactable.firstHoverEntered.AddListener(EnterHover);
+        interactable.lastHoverExited.AddListener(ExitHover);
     }
 
     #region"Methods required to interact through an XR Interactable"
@@ -46,25 +50,23 @@ public class HoverObject : MonoBehaviour
 
     public virtual void ActivateHover(bool fromParent = false)
     {
-        if (!grabbed)
-        {
-            mat.SetInteger(hover, 1);
-        }
+        if (fromParent)
+            parentIsHovered = true;
         else
-        {
-            mouseLeftHover = false;
-        }
+            isHovered = true;
+
+        if((parentIsHovered && attachedToBody) || isHovered)
+            mat.SetInteger(hover, 1);
     }
 
     public virtual void DeactivateHover(bool fromParent = false)
     {
-        if (!grabbed)
-        {
+        if (fromParent)
+            parentIsHovered = false;
+        else 
+            isHovered = false;
+
+        if(!parentIsHovered && !isHovered)
             mat.SetInteger(hover, 0);
-        }
-        else
-        {
-            mouseLeftHover = true;
-        }
     }
 }

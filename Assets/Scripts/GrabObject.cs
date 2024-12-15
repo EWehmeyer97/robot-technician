@@ -26,15 +26,15 @@ public class GrabObject : HoverObject
         originPos = rb.transform.localPosition;
         originRot = rb.transform.localRotation;
 
-        interactable.selectEntered.AddListener(EnterSelect);
-        interactable.selectExited.AddListener(ExitSelect);
+        interactable.firstSelectEntered.AddListener(EnterSelect);
+        interactable.lastSelectExited.AddListener(ExitSelect);
     }
 
     public override void ActivateHover(bool fromParent = false)
     {
-        base.ActivateHover(fromParent);
         if (!grabbed)
         {
+            base.ActivateHover(fromParent);
             foreach (var item in detachable)
                 item.ActivateHover(true);
         }
@@ -42,9 +42,9 @@ public class GrabObject : HoverObject
 
     public override void DeactivateHover(bool fromParent = false)
     {
-        base.DeactivateHover(fromParent);
         if (!grabbed)
         {
+            base.DeactivateHover(fromParent);
             foreach (var item in detachable)
                 item.DeactivateHover(true);
         }
@@ -71,23 +71,7 @@ public class GrabObject : HoverObject
         rb.useGravity = false; //turns off gravity to prevent additional physics on object
         rb.velocity = Vector3.zero; //removes all current movement from rigidbody
 
-        Vector3 offsetPosition = toFollow.position - rb.position;
-        Quaternion startRotation = rb.rotation * Quaternion.Inverse(toFollow.rotation);
-
-        StartCoroutine(DragObject(toFollow, offsetPosition, startRotation));
-
         grabUpdate?.Invoke(false);
-    }
-
-    private IEnumerator DragObject(Transform toFollow, Vector3 offsetPosition, Quaternion startRotation)
-    {
-        yield return null;
-
-        rb.position = toFollow.position - offsetPosition;
-        rb.rotation = toFollow.rotation * startRotation;
-
-        if (grabbed)
-            StartCoroutine(DragObject(toFollow, offsetPosition, startRotation));
     }
 
     public virtual void DropObject()
@@ -95,9 +79,9 @@ public class GrabObject : HoverObject
         grabbed = false;
         rb.useGravity = true;
 
-        if (mouseLeftHover) //triggers hover deactivate in case mouse left during the drag
+        if (leftHover) //triggers hover deactivate in case left during the drag
             DeactivateHover();
-        mouseLeftHover = false;
+        leftHover = false;
     }
 
     public virtual void ResetPosition(bool fromUI = false)
