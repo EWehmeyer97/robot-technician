@@ -1,9 +1,7 @@
-using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit;
 
+[RequireComponent(typeof(XRGrabInteractable))]
 public class GrabObject : HoverObject
 {
     [SerializeField] protected DetachObject[] detachable;
