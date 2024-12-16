@@ -1,19 +1,9 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(MeshCollider))]
-[RequireComponent(typeof(MouseInteraction))]
-
-public class GrabObject : MonoBehaviour
+public class GrabObject : HoverObject
 {
-    public string componentName;
-    
-    [SerializeField] protected Rigidbody rb;
     [SerializeField] protected DetachObject[] detachable;
-
-    //Material Properties
-    protected Material mat;
-    private readonly int hover = Shader.PropertyToID("_isHover"); //value found in shader to control hover state
     
     //For Dragging
     private Vector3 offset;
@@ -44,11 +34,11 @@ public class GrabObject : MonoBehaviour
         originRot = rb.transform.localRotation;
     }
 
-    public virtual void ActivateHover(bool fromParent = false)
+    public override void ActivateHover(bool fromParent = false)
     {
         if (!grabbed)
         {
-            mat.SetInteger(hover, 1);
+            base.ActivateHover(fromParent);
             foreach(var item in detachable)
                 item.ActivateHover(true);
         } else
@@ -57,11 +47,11 @@ public class GrabObject : MonoBehaviour
         }
     }
 
-    public virtual void DeactivateHover(bool fromParent = false)
+    public override void DeactivateHover(bool fromParent = false)
     {
         if (!grabbed)
         {
-            mat.SetInteger(hover, 0);
+            base.DeactivateHover(fromParent);
             foreach(var item in detachable)
                 item.DeactivateHover(true);
         } else
@@ -112,11 +102,11 @@ public class GrabObject : MonoBehaviour
         mouseLeftHover = false;
     }
 
-    public virtual void ResetPosition(bool fromUI = false)
+    public virtual void ResetPosition(bool fromUI = false, bool fromParent = false)
     {
         rb.transform.SetLocalPositionAndRotation(originPos, originRot);
         foreach (var item in detachable)
-            item.ResetPosition(fromUI);
+            item.ResetPosition(fromUI, true);
 
         if(fromUI)
             ActivateHover();

@@ -4,8 +4,6 @@ public class DetachObject : GrabObject
 {
     [SerializeField] private float distanceSnap = 0.1f;
 
-    private bool attachedToBody = true;
-
     protected override void Awake()
     {
         base.Awake();
@@ -45,23 +43,14 @@ public class DetachObject : GrabObject
     }
 
     //Reattaches ligament to body 
-    public override void ResetPosition(bool fromUI = false)
+    public override void ResetPosition(bool fromUI = false, bool fromParent = false)
     {
         rb.isKinematic = true;
         attachedToBody = true;
 
         base.ResetPosition(fromUI);
-    }
 
-    public override void ActivateHover(bool fromParent = false)
-    {
-        if(!fromParent || attachedToBody)
-            base.ActivateHover(fromParent);
-    }
-
-    public override void DeactivateHover(bool fromParent = false)
-    {
-        if (!fromParent || attachedToBody)
-            base.DeactivateHover(fromParent);
+        if(fromUI && fromParent)
+            DeactivateHover();
     }
 }
