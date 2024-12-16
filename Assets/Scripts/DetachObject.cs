@@ -44,11 +44,11 @@ public class DetachObject : GrabObject
     }
 
     //Reattaches ligament to body 
-    public override void ResetPosition(bool fromUI = false)
+    public override void ResetPosition()
     {
         rb.isKinematic = true;
         attachedToBody = true;
 
-        base.ResetPosition(fromUI);
+        base.ResetPosition();
     }
 }

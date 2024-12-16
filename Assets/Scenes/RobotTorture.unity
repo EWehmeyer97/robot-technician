@@ -593,8 +593,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.008
-      minScalar: 0.004
+      scalar: 0.004
+      minScalar: 0.002
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -6121,8 +6121,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.006
-      minScalar: 0.003
+      scalar: 0.003
+      minScalar: 0.001
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -11909,8 +11909,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.002
-      minScalar: 0.001
+      scalar: 0.004
+      minScalar: 0.002
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -18116,7 +18116,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
+  m_Antialiasing: 2
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -19484,7 +19484,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4676984813584738508}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46c0df8bb7dd8ae4dbd55b624ffa8264, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
@@ -19926,7 +19926,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2248445339211319969}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46c0df8bb7dd8ae4dbd55b624ffa8264, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
@@ -20620,7 +20620,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5943218963611849687}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46c0df8bb7dd8ae4dbd55b624ffa8264, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
@@ -20866,7 +20866,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 9005043244799837966}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46c0df8bb7dd8ae4dbd55b624ffa8264, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
